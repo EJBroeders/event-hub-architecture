@@ -1,9 +1,10 @@
 {
+  "exclude": ["src/infra"],
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "sourceMap": true,
     "strict": false
   }
