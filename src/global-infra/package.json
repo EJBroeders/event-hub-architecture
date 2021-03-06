@@ -1,0 +1,10 @@
+{
+    "name": "event-hub-architecture",
+    "devDependencies": {
+        "@types/node": "^10.0.0"
+    },
+    "dependencies": {
+        "@pulumi/pulumi": "^2.0.0",
+        "@pulumi/azure-native": "^0.7.0"
+    }
+}

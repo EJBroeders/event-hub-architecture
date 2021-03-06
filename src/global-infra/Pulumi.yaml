@@ -1,0 +1,3 @@
+name: event-hub-architecture
+runtime: nodejs
+description: An example architecture for using Azure Event Hubs
