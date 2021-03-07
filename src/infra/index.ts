@@ -1,6 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 
 import * as eventhub from "@pulumi/azure-native/eventhub";
+import * as insights from "@pulumi/azure-native/insights";
 import * as resources from "@pulumi/azure-native/resources";
 import * as storage from "@pulumi/azure-native/storage";
 import * as web from "@pulumi/azure-native/web";
@@ -27,10 +28,6 @@ const resourceGroup = new resources.ResourceGroup(`${prefix}-rg`, defaultTags);
 const defaultArgs: DefaultArgs = {
   resourceGroupName: resourceGroup.name as unknown as string,
   location: resourceGroup.location as unknown as string,
-  sku: {
-    name: "Standard",
-    tier: "Standard",
-  },
   ...defaultTags,
 };
 
@@ -46,6 +43,7 @@ const eventHubsNamespace = new eventhub.Namespace(`${prefix}-ehns`, {
 const storageAccountEventHubsCapture = new storage.StorageAccount(`${prefix.replace('-', '')}ehst`, {
   ...defaultArgs,
   kind: storage.Kind.StorageV2,
+  sku: { name: storage.SkuName.Standard_LRS },
 }, {
   parent: resourceGroup
 });
@@ -64,6 +62,7 @@ const counterConnectionString = infraInCounter(options);
 const storageAccountFunc = new storage.StorageAccount(`${prefix.replace('-', '')}func`, {
   ...defaultArgs,
   kind: storage.Kind.StorageV2,
+  sku: { name: storage.SkuName.Standard_LRS },
 }, {
   parent: resourceGroup
 });
@@ -86,8 +85,20 @@ const codeBlob = new storage.Blob(`${options.prefix}-func-zip`, {
 
 const plan = new web.AppServicePlan(`${options.prefix}-func-plan`, {
   ...defaultArgs,
+  sku: {
+    name: "Y1",
+    tier: "Dynamic",
+  },
 }, {
   parent: resourceGroup
+});
+
+const appInsights = new insights.Component(`${options.prefix}-func-ai`, {
+  ...defaultArgs,
+  kind: "web",
+  applicationType: insights.ApplicationType.Web,
+}, {
+  parent: plan
 });
 
 const storageConnectionFuncString = getConnectionString(resourceGroup.name, storageAccountFunc.name);
@@ -100,10 +111,15 @@ const app = new web.WebApp(`${options.prefix}-func`, {
   siteConfig: {
     appSettings: [
       { name: "AzureWebJobsStorage", value: storageConnectionFuncString },
+
       { name: "FUNCTIONS_EXTENSION_VERSION", value: "~3" },
       { name: "FUNCTIONS_WORKER_RUNTIME", value: "node" },
       { name: "WEBSITE_NODE_DEFAULT_VERSION", value: "~14" },
       { name: "WEBSITE_RUN_FROM_PACKAGE", value: codeBlobUrl },
+
+      { name: "APPINSIGHTS_INSTRUMENTATIONKEY", value: appInsights.instrumentationKey },
+      { name: "APPLICATIONINSIGHTS_CONNECTION_STRING", value: pulumi.interpolate`InstrumentationKey=${appInsights.instrumentationKey}` },
+      { name: "ApplicationInsightsAgent_EXTENSION_VERSION", value: "~2" },
 
       { name: "EventHubCounterConnection", value: counterConnectionString },
     ],

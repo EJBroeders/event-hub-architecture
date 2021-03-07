@@ -6,7 +6,6 @@ export type DefaultArgs = {
   tags: { [ key: string ]: string },
   resourceGroupName: string,
   location: string,
-  sku: { name: string, tier: string },
 };
 
 export default interface Options {
