@@ -1,9 +1,12 @@
-import * as azure from "@pulumi/azure";
+import * as eventhub from "@pulumi/azure-native/eventhub";
+import * as resources from "@pulumi/azure-native/resources";
+import * as storage from "@pulumi/azure-native/storage";
 
 export type DefaultArgs = {
   tags: { [ key: string ]: string },
   resourceGroupName: string,
   location: string,
+  sku: { name: string, tier: string },
 };
 
 export default interface Options {
@@ -11,7 +14,7 @@ export default interface Options {
 
   defaultArgs: DefaultArgs,
 
-  resourceGroup: azure.core.ResourceGroup,
-  eventHubsNamespace: azure.eventhub.EventHubNamespace,
-  storageAccountEventHubsCapture: azure.storage.Account,
+  resourceGroup: resources.ResourceGroup,
+  eventHubsNamespace: eventhub.Namespace,
+  storageAccountEventHubsCapture: storage.StorageAccount,
 };

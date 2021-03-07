@@ -14,6 +14,13 @@
       "type": "http",
       "direction": "out",
       "name": "res"
+    },
+    {
+      "type": "eventHub",
+      "name": "hub",
+      "eventHubName": "counter",
+      "connection": "EventHubCounterConnection",
+      "direction": "out"
     }
   ]
 }
